@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+      crossorigin="anonymous"
+    />
+    <script src="script.js"></script>
+    <title>Cuppa Joe's Coffee</title>
+  </head>
+  <body
+    class="container-sm d-flex flex-column align-items-center w-100 h-100 my-4"
+  >
+    <h1 class="fw-bold mb-4">Cuppa Joe's Coffee</h1>
+    <!-- Main Menu -->
+    <section id="mainMenu">
+      <h2>Main Menu</h2>
+      <p>Welcome to the phone ordering system for Cuppa Joe's Coffee.</p>
+      <div>
+        <button class="btn btn-success" type="button" onclick="newOrder()">
+          New Order
+        </button>
+        <button class="btn btn-danger" type="button" onclick="exit()">
+          Exit
+        </button>
+      </div>
+    </section>
+    <!-- Order Menu -->
+    <section class="d-none" id="orderMenu">
+      <a href="javascript:void(0);" onclick="showPage(mainMenu)"
+        >&larr; Return to Main Menu (cancel order)</a
+      >
+      <div class="my-4">
+        <h2>New Order</h2>
+        <p>
+          Ask the customer if they would like to pick up or have their coffees
+          delivered.<br />Then click the add button to start adding their
+          orders.
+        </p>
+      </div>
+      <!-- Order form -->
+      <form class="my-4" action="javascript:void(0);" id="orderForm">
+        <!-- Transport type -->
+        <div class="mb-3">
+          <label class="fw-bold" for="transportDropdown">Transport</label>
+          <select
+            class="form-select"
+            name="transportDropdown"
+            id="transportDropdown"
+          >
+            <option value="pickUp">Pick Up</option>
+            <option value="delivery">Delivery</option>
+          </select>
+        </div>
+        <!-- Coffee table -->
+        <table class="table">
+          <thead>
+            <tr class="fs-5">
+              <th scope="col"></th>
+              <th scope="col">Coffee</th>
+              <th scope="col">Size</th>
+              <th scope="col">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="orderBody"></tbody>
+        </table>
+        <div class="d-flex justify-content-end">
+          <button class="btn btn-primary" type="submit" id="submitOrder">
+            Submit
+          </button>
+        </div>
+        <button
+          class="btn btn-warning"
+          type="button"
+          id="cancelOrder"
+          onclick="showPage(mainMenu)"
+        >
+          Cancel
+        </button>
+      </form>
+    </section>
+    <!-- Order Invoice -->
+    <div class="d-none alert" role="alert" id="output"></div>
+  </body>
+</html>

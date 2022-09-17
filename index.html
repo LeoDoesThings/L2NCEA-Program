@@ -39,16 +39,25 @@
       <div class="my-4">
         <h2>New Order</h2>
         <p>
-          Ask the customer if they would like to pick up or have their coffees
-          delivered.<br />Then click the add button to start adding their
-          orders.
+          Ask the customer their name and if they would like to pick up or have
+          their coffees delivered.<br />Then click the add button to start
+          adding their orders. Maximum 10 items.
         </p>
       </div>
       <!-- Order form -->
       <form class="my-4" action="javascript:void(0);" id="orderForm">
+        <!-- Customer Name -->
+        <div class="input-group mb-2">
+          <span class="fw-bold input-group-text" for="transportDropdown"
+            >Customer Name</span
+          >
+          <input type="text" class="form-control" />
+        </div>
         <!-- Transport type -->
-        <div class="mb-3">
-          <label class="fw-bold" for="transportDropdown">Transport</label>
+        <div class="input-group mb-3">
+          <span class="fw-bold input-group-text" for="transportDropdown"
+            >Transport</span
+          >
           <select
             class="form-select"
             name="transportDropdown"
@@ -65,7 +74,7 @@
               <th scope="col"></th>
               <th scope="col">Coffee</th>
               <th scope="col">Size</th>
-              <th scope="col">Amount</th>
+              <th scope="col" class="text-end">Cost</th>
             </tr>
           </thead>
           <tbody id="orderBody"></tbody>

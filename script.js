@@ -1,4 +1,4 @@
-const COFFEES = [
+const COFFEE = [
   "Cappuccino",
   "Flat White",
   "Hot Mocha",
@@ -17,7 +17,16 @@ const costMedium = costRegular + 1;
 const costLarge = costRegular + 2;
 const costShipping = 5;
 
-let coffeeRows = "";
+let orders = {};
+let orderRows = "";
+let coffeeOptions = "";
+COFFEE.forEach((name) => generateCoffeeOption(name));
+
+// Number formatter for converting to dollars in the US format
+var currency = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
 
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
@@ -26,19 +35,56 @@ orderForm.addEventListener("submit", function (e) {
 
 function newOrder() {
   let orderBody = document.getElementById("orderBody");
-  coffeeRows = "";
-  COFFEES.forEach(createCoffeeRow);
-  orderBody.innerHTML = coffeeRows;
+  orderRows = "";
+  for (let i = 0; i < 10; i++) {
+    createCoffeeRow(COFFEE[i], i);
+  }
+  orderBody.innerHTML = orderRows;
   showPage(orderMenu);
 }
 
 function createCoffeeRow(name, index) {
-  coffeeRows += `<tr>
+  orderRows += `<tr>
       <th scope="row" class="fw-normal">${index + 1}.</th>
-      <td><b>${name}</b></td>
-      <td>Regular</td>
-      <td><input type="number" name="c${index}" id="input-${index}" /></td>
+      <td>
+        <select
+          class="form-select"
+          name="coffeeDropdown"
+          id="coffeeDropdown${index}"
+        >
+          <option selected>None</option>
+          ${coffeeOptions}
+        </select>
+      </td>
+      <td>
+        <select
+          onchange="updateCost(${index})"
+          class="form-select"
+          name="sizeDropdown"
+          id="sizeDropdown${index}"
+        >
+          <option value="${costRegular}">Regular</option>
+          <option value="${costMedium}">Medium</option>
+          <option value="${costLarge}">Large</option>
+        </select>
+      </td>
+      <td class="text-end" id="cost${index}">
+        ${currency.format(0)}
+      </td>
     </tr>`;
+}
+
+function generateCoffeeOption(name) {
+  // .replace(/\s+/g, "") will remove all whitespaces in the string
+  coffeeOptions += `<option value="${name.replace(/\s+/g, "")}">${name}
+                    </option>`;
+}
+
+function updateCost(index) {
+  let costElement = document.getElementById(`cost${index}`);
+  // Use parseFloat to convert string to number and round to 2dp
+  let cost = document.getElementById(`sizeDropdown${index}`).value;
+  costElement.innerHTML = `${currency.format(cost)}`;
 }
 
 function checkEmpty(userInput) {

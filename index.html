@@ -39,20 +39,13 @@
       <div class="my-4">
         <h2>New Order</h2>
         <p>
-          Ask the customer their name and if they would like to pick up or have
-          their coffees delivered.<br />Then click the add button to start
-          adding their orders. Maximum 10 items.
+          Ask the customer if they would like to pick up or have their coffees
+          delivered and fill out their details.<br />Then select the available
+          coffees to take their order. Maximum 10 items.
         </p>
       </div>
       <!-- Order form -->
       <form class="my-4" action="javascript:void(0);" id="orderForm">
-        <!-- Customer Name -->
-        <div class="input-group mb-2">
-          <span class="fw-bold input-group-text" for="transportDropdown"
-            >Customer Name</span
-          >
-          <input type="text" class="form-control" />
-        </div>
         <!-- Transport type -->
         <div class="input-group mb-3">
           <span class="fw-bold input-group-text" for="transportDropdown"
@@ -62,10 +55,31 @@
             class="form-select"
             name="transportDropdown"
             id="transportDropdown"
+            onchange="updateTransport(this)"
           >
             <option value="pickUp">Pick Up</option>
             <option value="delivery">Delivery</option>
           </select>
+        </div>
+        <!-- Customer Info -->
+        <div class="input-group mb-2">
+          <span class="input-group-text" for="customerName">Customer Name</span>
+          <input type="text" class="form-control" id="customerName" />
+        </div>
+        <!-- Delivery info -->
+        <div class="d-none" id="deliveryInfo">
+          <div class="input-group mb-2">
+            <span class="input-group-text" for="customerAddress"
+              >Delivery Address</span
+            >
+            <input type="text" class="form-control" id="customerAddress" />
+          </div>
+          <div class="input-group mb-2">
+            <span class="input-group-text" for="customerPhone"
+              >Phone Number</span
+            >
+            <input type="tel" class="form-control" id="customerPhone" />
+          </div>
         </div>
         <!-- Coffee table -->
         <table class="table">
@@ -95,6 +109,8 @@
       </form>
     </section>
     <!-- Order Invoice -->
+    <section class="d-none" id="orderInvoice"></section>
+    <!-- Program output box -->
     <div class="d-none alert" role="alert" id="output"></div>
   </body>
 </html>

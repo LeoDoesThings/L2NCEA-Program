@@ -18,6 +18,7 @@ const costMedium = costRegular + 1;
 const costLarge = costRegular + 2;
 const costShipping = 5;
 let costTotal = 0;
+let delivery = false;
 
 let orderRows = "";
 let coffeeOptions = "";
@@ -36,7 +37,12 @@ orderForm.addEventListener("submit", function (e) {
 
 function newOrder() {
   let orderBody = document.getElementById("orderBody");
+  delivery = false;
   orderRows = "";
+  let pricesElement = document.getElementById("prices");
+  prices.innerHTML = `Regular - ${currency.format(costRegular)}<br>
+                      Medium - ${currency.format(costMedium)}<br>
+                      Large - ${currency.format(costLarge)}`;
   orderTotal = `<th scope="row" class="fw-bold">Total</th>
       <td></td><td></td>
       <td class="text-end" id="costTotal">
@@ -96,6 +102,7 @@ function createCoffeeOption(name, index) {
 function updateCoffee(index) {
   let coffeeElement = document.getElementById(`coffeeDropdown${index}`);
   let sizeElement = document.getElementById(`sizeDropdown${index}`);
+  // If a coffee is selected, inform the user of the empty size
   if (coffeeElement.value != "none") {
     sizeElement.disabled = false;
     sizeElement.classList.add("bg-danger");
@@ -136,9 +143,22 @@ function updateCost(index) {
 function updateTransport(transportSelect) {
   let deliveryElement = document.getElementById("deliveryInfo");
   if (transportSelect.value == "delivery") {
-    deliveryElement.classList.remove("d-none");
+    delivery = true;
+    deliveryElement.innerHTML = `
+          <div class="input-group mb-2">
+            <span class="input-group-text" for="customerAddress"
+              >Delivery Address</span
+            >
+            <input type="text" class="form-control" id="customerAddress" />
+          </div>
+          <div class="input-group mb-2">
+            <span class="input-group-text" for="customerPhone"
+              >Phone Number</span
+            >
+            <input type="tel" class="form-control" id="customerPhone" />
+          </div>`;
   } else {
-    deliveryElement.classList.add("d-none");
+    deliveryElement.innerHTML = "";
   }
 }
 

@@ -20,6 +20,8 @@ const costShipping = 5;
 let costTotal = 0;
 let delivery = false;
 
+let customerInfo = [];
+let order = [];
 let orderRows = "";
 let coffeeOptions = "";
 COFFEE.forEach(createCoffeeOption);
@@ -33,14 +35,48 @@ var currency = new Intl.NumberFormat("en-US", {
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
   resetOutput();
+
+  let customerInputs = document.querySelectorAll(`input[id^="customer"]`);
+  customerInputs.forEach(function (input) {
+    input = input.value;
+    if (checkEmpty(input)) {
+      customerInfo.push(input.value);
+    } else {
+      alert("red", "Please enter all customer information");
+      return;
+    }
+  });
+
+  for (let i = 0; i < COFFEE.length; i++) {
+    order.push([0, 0, 0]);
+  }
+
+  let coffeeTypes = document.querySelectorAll(`select[id^="coffeeDropdown"]`);
+  let coffeeSizes = document.querySelectorAll(`select[id^="sizeDropdown"]`);
+
+  for (let i = 0; i < coffeeTypes.length; i++) {
+    let ct = coffeeTypes[i].value;
+    let cs = coffeeSizes[i].value;
+    let sizeID = 0;
+
+    if (cs == "medium") sizeID = 1;
+    else if (cs == "large") sizeID = 2;
+
+    if (!isNaN(ct)) {
+      order[ct][sizeID] += 1;
+    }
+  }
 });
 
 function newOrder() {
   let orderBody = document.getElementById("orderBody");
+  let pricesElement = document.getElementById("prices");
+  // Reset variables
+  order = [];
   delivery = false;
   orderRows = "";
-  let pricesElement = document.getElementById("prices");
-  prices.innerHTML = `Regular - ${currency.format(costRegular)}<br>
+  // Inject information onto page
+  pricesElement.innerHTML = `Regular - ${currency.format(costRegular)}<br>
                       Medium - ${currency.format(costMedium)}<br>
                       Large - ${currency.format(costLarge)}`;
   orderTotal = `<th scope="row" class="fw-bold">Total</th>
@@ -82,9 +118,9 @@ function createCoffeeRow(index) {
           id="sizeDropdown${index}"
           disabled
         >
-          <option value="${costRegular}">Regular</option>
-          <option value="${costMedium}">Medium</option>
-          <option value="${costLarge}">Large</option>
+          <option value="regular">Regular</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
         </select>
       </td>
       <td class="text-end" id="cost-${index}">
@@ -95,7 +131,7 @@ function createCoffeeRow(index) {
 
 function createCoffeeOption(name, index) {
   // .replace(/\s+/g, "") will remove all whitespaces in the string
-  coffeeOptions += `<option value="coffee${index}">${name}
+  coffeeOptions += `<option value="${index}">${name}
                     </option>`;
 }
 
@@ -126,7 +162,10 @@ function updateCost(index) {
   // Run if the user has selected a coffee
   if (coffeeElement.value != "none") {
     // Get the cost of the new size selected
-    cost = document.getElementById(`sizeDropdown${index}`).value;
+    size = document.getElementById(`sizeDropdown${index}`).value;
+    if (size == "medium") cost = costMedium;
+    else if (size == "large") cost = costMedium;
+    else cost = costRegular;
   }
   // Inject new cost into the element
   costElement.innerHTML = `${currency.format(cost)}`;
@@ -158,6 +197,7 @@ function updateTransport(transportSelect) {
             <input type="tel" class="form-control" id="customerPhone" />
           </div>`;
   } else {
+    delivery = false;
     deliveryElement.innerHTML = "";
   }
 }
@@ -165,7 +205,6 @@ function updateTransport(transportSelect) {
 function checkEmpty(userInput) {
   // Check if input is empty
   if (userInput == "") {
-    alert("red", "Please answer all questions before submitting.");
     return false;
   } else {
     return userInput;

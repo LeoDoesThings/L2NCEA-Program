@@ -76,10 +76,21 @@ function newOrder() {
   delivery = false;
   orderRows = "";
   // Inject information onto page
-  pricesElement.innerHTML = `Regular - ${currency.format(costRegular)}<br>
-                      Medium - ${currency.format(costMedium)}<br>
-                      Large - ${currency.format(costLarge)}`;
-  orderTotal = `<th scope="row" class="fw-bold">Total</th>
+  pricesElement.innerHTML = `
+    Regular - ${currency.format(costRegular)}<br>
+    Medium - ${currency.format(costMedium)}<br>
+    Large - ${currency.format(costLarge)}`;
+  orderShipping = `
+    <tr id="rowDelivery" class="d-none">
+    <th scope="row" class="fw-bold">Delivery</th>
+      <td></td><td></td>
+      <td class="text-end" id="costShipping">
+        ${currency.format(costShipping)}
+      </td>
+    </tr>`;
+  orderTotal = `
+    <tr>
+      <th scope="row" class="fw-bold">Total</th>
       <td></td><td></td>
       <td class="text-end" id="costTotal">
         ${currency.format(costTotal)}
@@ -88,7 +99,7 @@ function newOrder() {
   for (let i = 0; i < maxCapacity; i++) {
     createCoffeeRow(i);
   }
-  orderTable = orderRows + orderTotal;
+  orderTable = orderRows + orderShipping + orderTotal;
   orderBody.innerHTML = orderTable;
   for (let i = 0; i < maxCapacity; i++) {
     updateCoffee(i);
@@ -97,7 +108,8 @@ function newOrder() {
 }
 
 function createCoffeeRow(index) {
-  orderRows += `<tr>
+  orderRows += `
+    <tr>
       <th scope="row" class="fw-normal">${index + 1}.</th>
       <td>
         <select
@@ -154,7 +166,6 @@ function updateCost(index) {
   let coffeeElement = document.getElementById(`coffeeDropdown${index}`);
   let sizeElement = document.getElementById(`sizeDropdown${index}`);
   let costElement = document.getElementById(`cost-${index}`);
-  let costTotalElement = document.getElementById("costTotal");
   let cost = 0;
   if (sizeElement.value != "") {
     sizeElement.classList.remove("bg-danger");
@@ -164,42 +175,51 @@ function updateCost(index) {
     // Get the cost of the new size selected
     size = document.getElementById(`sizeDropdown${index}`).value;
     if (size == "medium") cost = costMedium;
-    else if (size == "large") cost = costMedium;
+    else if (size == "large") cost = costLarge;
     else cost = costRegular;
   }
   // Inject new cost into the element
   costElement.innerHTML = `${currency.format(cost)}`;
-  // Update total cost
+  updateTotal();
+}
+
+function updateTotal() {
+  let costTotalElement = document.getElementById("costTotal");
   let costElements = document.querySelectorAll(`td[id^="cost-"]`);
   costTotal = 0;
   costElements.forEach(
     (element) =>
       (costTotal += Number(element.textContent.replace(/[^0-9\.]+/g, "")))
   );
+  if (delivery == true) costTotal += costShipping;
   costTotalElement.innerHTML = currency.format(costTotal);
 }
 
 function updateTransport(transportSelect) {
   let deliveryElement = document.getElementById("deliveryInfo");
+  let deliveryRow = document.getElementById("rowDelivery");
   if (transportSelect.value == "delivery") {
     delivery = true;
     deliveryElement.innerHTML = `
-          <div class="input-group mb-2">
-            <span class="input-group-text" for="customerAddress"
-              >Delivery Address</span
-            >
-            <input type="text" class="form-control" id="customerAddress" />
-          </div>
-          <div class="input-group mb-2">
-            <span class="input-group-text" for="customerPhone"
-              >Phone Number</span
-            >
-            <input type="tel" class="form-control" id="customerPhone" />
-          </div>`;
+      <div class="input-group mb-2">
+        <span class="input-group-text" for="customerAddress"
+          >Delivery Address</span
+        >
+        <input type="text" class="form-control" id="customerAddress" />
+      </div>
+      <div class="input-group mb-2">
+        <span class="input-group-text" for="customerPhone"
+          >Phone Number</span
+        >
+        <input type="tel" class="form-control" id="customerPhone" />
+      </div>`;
+    deliveryRow.classList.remove("d-none");
   } else {
     delivery = false;
     deliveryElement.innerHTML = "";
+    deliveryRow.classList.add("d-none");
   }
+  updateTotal();
 }
 
 function checkEmpty(userInput) {
@@ -222,18 +242,25 @@ function showPage(page) {
 }
 
 function resetOutput() {
-  output.classList.add("d-none");
-  output.classList.remove("alert-danger");
-  output.classList.remove("alert-success");
   output.innerHTML = "";
 }
 
 function alert(colour, message) {
+  let bg;
   if (colour == "red") {
-    output.classList.add("alert-danger");
+    bg = "text-bg-danger";
   } else if (colour == "green") {
-    output.classList.add("alert-success");
+    bg = "text-bg-success";
   }
-  output.innerHTML = message;
-  output.classList.remove("d-none");
+  output.innerHTML = `
+    <div id="liveToast" class="toast align-items-center border-0 ${bg}" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body fw-bold">
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>`;
+  const toast = new bootstrap.Toast(document.getElementById("liveToast"));
+  toast.show();
 }

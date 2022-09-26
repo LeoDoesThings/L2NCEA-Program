@@ -19,6 +19,7 @@ const costLarge = costRegular + 2;
 const costShipping = 5;
 let costTotal = 0;
 let delivery = false;
+let remainingCapacity = maxCapacity;
 
 let customerInfo = [];
 let order = [];
@@ -35,7 +36,7 @@ var currency = new Intl.NumberFormat("en-US", {
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
   resetOutput();
-
+  let run = true;
   let customerInputs = document.querySelectorAll(`input[id^="customer"]`);
   customerInputs.forEach(function (input) {
     input = input.value;
@@ -43,10 +44,16 @@ orderForm.addEventListener("submit", function (e) {
       customerInfo.push(input.value);
     } else {
       alert("red", "Please enter all customer information");
+      run = false;
       return;
     }
   });
 
+  if (run == false) {
+    return;
+  }
+
+  order = [];
   for (let i = 0; i < COFFEE.length; i++) {
     order.push([0, 0, 0]);
   }
@@ -66,15 +73,17 @@ orderForm.addEventListener("submit", function (e) {
       order[ct][sizeID] += 1;
     }
   }
+  console.log(order);
 });
 
 function newOrder() {
   let orderBody = document.getElementById("orderBody");
   let pricesElement = document.getElementById("prices");
+  let bulkCoffeeSelect = document.getElementById("bulkCoffeeSelect");
   // Reset variables
-  order = [];
   delivery = false;
   orderRows = "";
+  bulkCoffeeSelect.innerHTML = "";
   // Inject information onto page
   pricesElement.innerHTML = `
     Regular - ${currency.format(costRegular)}<br>
@@ -104,18 +113,19 @@ function newOrder() {
   for (let i = 0; i < maxCapacity; i++) {
     updateCoffee(i);
   }
+  bulkCoffeeSelect.innerHTML = coffeeOptions;
   showPage(orderMenu);
 }
 
 function createCoffeeRow(index) {
   orderRows += `
-    <tr>
+    <tr id="coffeeRow${index}">
       <th scope="row" class="fw-normal">${index + 1}.</th>
       <td>
         <select
           onchange="updateCoffee(${index})"
           class="form-select"
-          name="coffeeDropdown"
+          name="coffeeDropdown${index}"
           id="coffeeDropdown${index}"
         >
           <option value="none" selected>None</option>
@@ -126,7 +136,7 @@ function createCoffeeRow(index) {
         <select
           onchange="updateCost(${index})"
           class="form-select"
-          name="sizeDropdown"
+          name="sizeDropdown${index}"
           id="sizeDropdown${index}"
           disabled
         >
@@ -222,23 +232,63 @@ function updateTransport(transportSelect) {
   updateTotal();
 }
 
+function updateBulk(bulkSelect) {
+  let bulkCoffeeName = document.getElementById("bulkCoffeeName");
+  bulkCoffeeName.innerHTML = COFFEE[bulkSelect.value];
+}
+
+function verifyAmount(input) {
+  if (input.value < 1) {
+    input.value = 1;
+    alert("red", "You must add at least 1 item");
+  } else if (input.value > remainingCapacity) {
+    input.value = remainingCapacity;
+    alert("red", `The remaining capacity is ${remainingCapacity} items`);
+  }
+}
+
+function bulkAdd() {
+  let amount = document.getElementById("bulkAddAmount").value;
+  let size = document.getElementById("bulkAddSize").value;
+  let coffeeSelect = document.getElementById("bulkCoffeeSelect").value;
+  for (let i = 0; i < amount; i++) {
+    document.getElementById(`coffeeDropdown${i}`).value = coffeeSelect;
+    let sizeDropdown = document.getElementById(`sizeDropdown${i}`);
+    sizeDropdown.value = size;
+    sizeDropdown.disabled = false;
+    updateCost(i);
+  }
+}
+
+function calculateCapacity() {
+  let coffeeSizes = document.querySelectorAll("select[id^='sizeDropdown']");
+  remainingCapacity = maxCapacity;
+  coffeeSizes.forEach(function (size) {
+    if (checkEmpty(size.value)) {
+      remainingCapacity -= 1;
+    }
+  });
+  console.log(remainingCapacity);
+}
+
 function checkEmpty(userInput) {
   // Check if input is empty
   if (userInput == "") {
     return false;
   } else {
-    return userInput;
+    return true;
   }
 }
 
 function showPage(page) {
   let mainMenu = document.getElementById("mainMenu");
   let orderMenu = document.getElementById("orderMenu");
+  let orderInvoice = document.getElementById("orderInvoice");
   resetOutput();
   mainMenu.classList.add("d-none");
   orderMenu.classList.add("d-none");
+  orderInvoice.classList.add("d-none");
   page.classList.remove("d-none");
-  page.classList.add("d-block");
 }
 
 function resetOutput() {

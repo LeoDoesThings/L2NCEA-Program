@@ -18,6 +18,12 @@
     ></script>
     <script src="script.js" defer></script>
     <title>Cuppa Joe's Coffee</title>
+    <style>
+      /* Always show the program output on front */
+      #output {
+        z-index: 9999;
+      }
+    </style>
   </head>
   <body
     class="container-sm d-flex flex-column align-items-center w-100 h-100 my-4"
@@ -87,6 +93,7 @@
           class="btn btn-primary"
           data-bs-toggle="modal"
           data-bs-target="#staticBackdrop"
+          onclick="calculateCapacity()"
         >
           Bulk Add Items
         </button>
@@ -146,30 +153,21 @@
                   id="bulkCoffeeSelect"
                   size="12"
                   class="overflow-hidden"
+                  onchange="updateBulk(this)"
                 >
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
-                  <option value="0">Cappuccino</option>
+                  <!-- Options injected onto page through newOrder() function -->
                 </select>
                 <form class="d-flex flex-column" action="javascript:void(0);">
-                  <h6>Cappuccino</h6>
+                  <h6 id="bulkCoffeeName">Cappuccino</h6>
                   <div class="input-group mb-3">
                     <div class="form-floating">
                       <input
                         type="number"
                         class="form-control"
                         id="bulkAddAmount"
+                        onchange="verifyAmount(this)"
                       />
-                      <label for="floatingInputGroup1">Amount</label>
+                      <label for="bulkAddAmount">Amount</label>
                     </div>
                   </div>
                   <label for="bulkAddSize">Size</label>
@@ -193,13 +191,18 @@
               >
                 Close without Saving
               </button>
-              <button type="button" class="btn btn-primary">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="bulkAdd(); calculateCapacity()"
+              >
                 Save and Add More
               </button>
               <button
                 type="button"
                 class="btn btn-success"
                 data-bs-dismiss="modal"
+                onclick="bulkAdd()"
               >
                 Save and Close
               </button>
@@ -209,7 +212,21 @@
       </div>
     </section>
     <!-- Order Invoice -->
-    <section class="d-none" id="orderInvoice"></section>
+    <section class="d-none" id="orderInvoice">
+      <h2 id="invoiceName"></h2>
+      <table class="table">
+        <thead>
+          <tr class="fs-5">
+            <th scope="col"></th>
+            <th scope="col">Coffee</th>
+            <th scope="col">Size</th>
+            <th scope="col">Amount</th>
+            <th scope="col" class="text-end">Cost</th>
+          </tr>
+        </thead>
+        <tbody id="invoiceBody"></tbody>
+      </table>
+    </section>
     <!-- Program output box -->
     <div
       class="toast-container position-fixed bottom-0 end-0 p-3"

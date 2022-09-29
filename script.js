@@ -18,7 +18,7 @@ const costMedium = costRegular + 1;
 const costLarge = costRegular + 2;
 const costShipping = 5;
 let costTotal = 0;
-let delivery = false;
+let isDelivery = false;
 let remainingCapacity = maxCapacity;
 
 let customerInfo = [];
@@ -81,7 +81,7 @@ function newOrder() {
   let pricesElement = document.getElementById("prices");
   let bulkCoffeeSelect = document.getElementById("bulkCoffeeSelect");
   // Reset variables
-  delivery = false;
+  isDelivery = false;
   orderRows = "";
   bulkCoffeeSelect.innerHTML = "";
   // Inject information onto page
@@ -201,7 +201,7 @@ function updateTotal() {
     (element) =>
       (costTotal += Number(element.textContent.replace(/[^0-9\.]+/g, "")))
   );
-  if (delivery == true) costTotal += costShipping;
+  if (isDelivery == true) costTotal += costShipping;
   costTotalElement.innerHTML = currency.format(costTotal);
 }
 
@@ -209,7 +209,7 @@ function updateTransport(transportSelect) {
   let deliveryElement = document.getElementById("deliveryInfo");
   let deliveryRow = document.getElementById("rowDelivery");
   if (transportSelect.value == "delivery") {
-    delivery = true;
+    isDelivery = true;
     deliveryElement.innerHTML = `
       <div class="input-group mb-2">
         <span class="input-group-text" for="customerAddress"
@@ -225,7 +225,7 @@ function updateTransport(transportSelect) {
       </div>`;
     deliveryRow.classList.remove("d-none");
   } else {
-    delivery = false;
+    isDelivery = false;
     deliveryElement.innerHTML = "";
     deliveryRow.classList.add("d-none");
   }
@@ -248,16 +248,48 @@ function verifyAmount(input) {
 }
 
 function bulkAdd() {
+  if (remainingCapacity <= 0) {
+    alert("red", "No capacity remaining. No items added.");
+    return;
+  }
   let amount = document.getElementById("bulkAddAmount").value;
+  // If no amount was selected then do not add anything
+  if (amount == "") {
+    alert("red", "No amount entered. Added 0 items.");
+    return;
+  }
   let size = document.getElementById("bulkAddSize").value;
   let coffeeSelect = document.getElementById("bulkCoffeeSelect").value;
+  if (coffeeSelect == "") {
+    alert("red", "Select a coffee to add");
+    return;
+  }
+  let formCoffees = document.querySelectorAll("select[id^='coffeeDropdown']");
+  let formSizes = document.querySelectorAll("select[id^='sizeDropdown']");
+  let formCoffeesEmpty = [];
+  let formSizesEmpty = [];
+  // Store all empty coffee and size inputs in main form in respective arrays
+  formCoffees.forEach(function (coffeeElement) {
+    if (coffeeElement.value == "none") {
+      formCoffeesEmpty.push(coffeeElement);
+    }
+  });
+  formSizes.forEach(function (sizeElement) {
+    if (sizeElement.value == "") {
+      formSizesEmpty.push(sizeElement);
+    }
+  });
+  // Add the bulk items to empty main form rows
   for (let i = 0; i < amount; i++) {
-    document.getElementById(`coffeeDropdown${i}`).value = coffeeSelect;
-    let sizeDropdown = document.getElementById(`sizeDropdown${i}`);
-    sizeDropdown.value = size;
-    sizeDropdown.disabled = false;
+    formCoffeesEmpty[i].value = coffeeSelect;
+    formSizesEmpty[i].value = size;
+    formSizesEmpty[i].disabled = false;
     updateCost(i);
   }
+  // Clear bulk amount input field
+  document.getElementById("bulkAddAmount").value = "";
+  let sizeCapitalised = size.charAt(0).toUpperCase() + size.slice(1);
+  alert("green", `Added ${amount}x ${sizeCapitalised} ${COFFEE[coffeeSelect]}`);
 }
 
 function calculateCapacity() {
@@ -268,7 +300,6 @@ function calculateCapacity() {
       remainingCapacity -= 1;
     }
   });
-  console.log(remainingCapacity);
 }
 
 function checkEmpty(userInput) {

@@ -109,19 +109,19 @@
           </thead>
           <tbody id="orderBody"></tbody>
         </table>
-        <div class="d-flex justify-content-end">
+        <div class="d-flex justify-content-between">
+          <button
+            class="btn btn-warning"
+            type="button"
+            id="cancelOrder"
+            onclick="showPage(mainMenu)"
+          >
+            Cancel
+          </button>
           <button class="btn btn-primary" type="submit" id="submitOrder">
             Submit
           </button>
         </div>
-        <button
-          class="btn btn-warning"
-          type="button"
-          id="cancelOrder"
-          onclick="showPage(mainMenu)"
-        >
-          Cancel
-        </button>
       </form>
       <!-- Bulk add (Bootstrap Modal) -->
       <div
@@ -213,6 +213,9 @@
     </section>
     <!-- Order Invoice -->
     <section class="d-none" id="orderInvoice">
+      <a href="javascript:void(0);" onclick="showPage(orderMenu)"
+        >&larr; Return to Order Page (edit order)</a
+      >
       <h2 id="invoiceName"></h2>
       <table class="table">
         <thead>
@@ -226,6 +229,19 @@
         </thead>
         <tbody id="invoiceBody"></tbody>
       </table>
+      <div class="d-flex justify-content-between">
+        <button
+          class="btn btn-warning"
+          type="button"
+          id="cancelInvoice"
+          onclick="showPage(mainMenu)"
+        >
+          Cancel
+        </button>
+        <button class="btn btn-primary" type="submit" id="saveOrder">
+          Save Order
+        </button>
+      </div>
     </section>
     <!-- Program output box -->
     <div

@@ -36,7 +36,7 @@ var currency = new Intl.NumberFormat("en-US", {
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
   resetOutput();
-  let run = true;
+  let run;
   let customerInputs = document.querySelectorAll(`input[id^="customer"]`);
   customerInputs.forEach(function (input) {
     input = input.value;
@@ -62,16 +62,24 @@ orderForm.addEventListener("submit", function (e) {
   let coffeeSizes = document.querySelectorAll(`select[id^="sizeDropdown"]`);
 
   for (let i = 0; i < coffeeTypes.length; i++) {
-    let ct = coffeeTypes[i].value;
-    let cs = coffeeSizes[i].value;
+    let cType = coffeeTypes[i].value;
+    let cSize = coffeeSizes[i].value;
     let sizeID = 0;
 
-    if (cs == "medium") sizeID = 1;
-    else if (cs == "large") sizeID = 2;
+    if (cSize == "medium") sizeID = 1;
+    else if (cSize == "large") sizeID = 2;
 
-    if (!isNaN(ct)) {
-      order[ct][sizeID] += 1;
+    if (!isNaN(cType)) {
+      order[cType][sizeID] += 1;
     }
+  }
+
+  orderSum = order.flat().reduce((a, b) => a + b, 0);
+
+  if (orderSum == 0) {
+    alert("red", "Please add at least 1 coffee to the order");
+  } else {
+    showPage(orderInvoice);
   }
   console.log(order);
 });

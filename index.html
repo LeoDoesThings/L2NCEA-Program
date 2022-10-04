@@ -153,7 +153,7 @@
                   id="bulkCoffeeSelect"
                   size="12"
                   class="overflow-hidden"
-                  onchange="updateBulk(this)"
+                  onchange="updateBulkName(this)"
                 >
                   <!-- Options injected onto page through newOrder() function -->
                 </select>
@@ -213,14 +213,13 @@
     </section>
     <!-- Order Invoice -->
     <section class="d-none" id="orderInvoice">
-      <a href="javascript:void(0);" onclick="showPage(orderMenu)"
+      <a href="javascript:void(0);" id="editOrder" onclick="showPage(orderMenu)"
         >&larr; Return to Order Page (edit order)</a
       >
-      <h2 id="invoiceName"></h2>
+      <h2 id="invoiceTitle"></h2>
       <table class="table">
         <thead>
           <tr class="fs-5">
-            <th scope="col"></th>
             <th scope="col">Coffee</th>
             <th scope="col">Size</th>
             <th scope="col">Amount</th>
@@ -238,7 +237,12 @@
         >
           Cancel
         </button>
-        <button class="btn btn-primary" type="submit" id="saveOrder">
+        <button
+          class="btn btn-primary"
+          type="button"
+          id="saveOrder"
+          onclick="saveOrder()"
+        >
           Save Order
         </button>
       </div>

@@ -34,10 +34,17 @@
       <h2>Main Menu</h2>
       <p>Welcome to the phone ordering system for Cuppa Joe's Coffee.</p>
       <div>
-        <button class="btn btn-success" type="button" onclick="newOrder()">
+        <button class="btn btn-primary" type="button" onclick="newOrder()">
           New Order
         </button>
-        <button class="btn btn-danger" type="button" onclick="exit()">
+        <button
+          class="btn btn-success"
+          type="button"
+          onclick="showPage(savedOrders); showLocalStorage()"
+        >
+          Saved Orders
+        </button>
+        <button class="btn btn-danger" type="button" onclick="window.close()">
           Exit
         </button>
       </div>
@@ -216,36 +223,42 @@
       <a href="javascript:void(0);" id="editOrder" onclick="showPage(orderMenu)"
         >&larr; Return to Order Page (edit order)</a
       >
-      <h2 id="invoiceTitle"></h2>
-      <table class="table">
-        <thead>
-          <tr class="fs-5">
-            <th scope="col">Coffee</th>
-            <th scope="col">Size</th>
-            <th scope="col">Amount</th>
-            <th scope="col" class="text-end">Cost</th>
-          </tr>
-        </thead>
-        <tbody id="invoiceBody"></tbody>
-      </table>
-      <div class="d-flex justify-content-between">
-        <button
-          class="btn btn-warning"
-          type="button"
-          id="cancelInvoice"
-          onclick="showPage(mainMenu)"
-        >
-          Cancel
-        </button>
-        <button
-          class="btn btn-primary"
-          type="button"
-          id="saveOrder"
-          onclick="saveOrder()"
-        >
-          Save Order
-        </button>
+      <div class="my-4">
+        <h2 id="invoiceTitle"></h2>
+        <h6 id="invoiceDetails" class="my-3"></h6>
+        <table class="table">
+          <thead>
+            <tr class="fs-5">
+              <th scope="col">Coffee</th>
+              <th scope="col">Size</th>
+              <th scope="col">Amount</th>
+              <th scope="col" class="text-end">Cost</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceBody"></tbody>
+        </table>
+        <div class="d-flex justify-content-between" id="invoiceButtons">
+          <button
+            class="btn btn-warning"
+            type="button"
+            id="cancelInvoice"
+            onclick="showPage(mainMenu)"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" type="button" id="saveOrder">
+            Save Order
+          </button>
+        </div>
       </div>
+    </section>
+    <!-- Saved Orders -->
+    <section class="d-none" id="savedOrders">
+      <a href="javascript:void(0);" onclick="showPage(mainMenu)"
+        >&larr; Return to Main Menu</a
+      >
+      <h2 class="my-4">Saved Orders</h2>
+      <div class="d-grid gap-2" id="ordersList"></div>
     </section>
     <!-- Program output box -->
     <div

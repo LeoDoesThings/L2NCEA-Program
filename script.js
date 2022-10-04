@@ -22,6 +22,7 @@ let isDelivery = false;
 let remainingCapacity = maxCapacity;
 
 let customerInfo = [];
+let savedOrder = {};
 let order = [];
 let invoiceRows = "";
 let orderRows = "";
@@ -34,6 +35,7 @@ var currency = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
+let orderForm = document.getElementById("orderForm");
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
   resetOutput();
@@ -42,17 +44,22 @@ orderForm.addEventListener("submit", function (e) {
   customerInputs.forEach(function (input) {
     input = input.value;
     if (isEmpty(input)) {
+      // Stop running if any customer information was not entered
       alert("red", "Please enter all customer information");
       run = false;
+      return;
     } else {
-      customerInfo.push(input.value);
+      // Add customer info to array
+      customerInfo.push(input);
     }
   });
 
+  // Stop running if variable is false
   if (run == false) {
     return;
   }
 
+  // Reset order array
   order = [];
   for (let i = 0; i < COFFEE.length; i++) {
     order.push([0, 0, 0]);
@@ -64,11 +71,14 @@ orderForm.addEventListener("submit", function (e) {
   for (let i = 0; i < coffeeTypes.length; i++) {
     let cType = coffeeTypes[i].value;
     let cSize = coffeeSizes[i].value;
+    // Default size is regular
     let sizeID = 0;
 
+    // Change size depending on user input
     if (cSize == "medium") sizeID = 1;
     else if (cSize == "large") sizeID = 2;
 
+    // If the coffee type is a number then add 1 to the corresponding order index
     if (!isNaN(cType)) {
       order[cType][sizeID] += 1;
     }
@@ -79,11 +89,13 @@ orderForm.addEventListener("submit", function (e) {
   if (orderSum == 0) {
     alert("red", "Please add at least 1 coffee to the order");
   } else {
-    readOrder(order, true);
-    showPage(orderInvoice);
+    savedOrder = {
+      customer: customerInfo,
+      order: order,
+      delivery: isDelivery,
+    };
+    readOrder(savedOrder, true);
   }
-
-  console.log(order);
 });
 
 function newOrder() {
@@ -330,29 +342,43 @@ function calculateCapacity() {
   });
 }
 
-function readOrder(order, canEdit) {
+function readOrder(savedOrder, canEdit) {
   // Get HTML elements
   let invoiceBody = document.getElementById("invoiceBody");
   let title = document.getElementById("invoiceTitle");
-  // Show order title
-  if (isDelivery == true) title.innerHTML = "Delivery Order";
-  else title.innerHTML = "Pick-up Order";
   // Reset variables
   let costTotal = 0;
   let size;
   invoiceRows = "";
 
+  // Get order from object in format: [customerInfo, order, isDelivery]
+  orderValues = Object.values(savedOrder);
+
+  // Show order title
+  if (orderValues[2] == true) title.innerHTML = "Delivery Order";
+  else title.innerHTML = "Pick-up Order";
+
   // Change function of back button if the order can not be edited
-  if (canEdit == false) {
-    let editOrderBtn = document.getElementById("editOrder");
-    editOrderBtn.innerHTML = "&larr; Return to Saved Orders Page";
-    editOrderBtn.onclick = showPage(savedOrders);
+  if (!canEdit) {
+    let editOrderLink = document.getElementById("editOrder");
+    let invoiceBtn = document.getElementById("invoiceButtons");
+    editOrderLink.innerHTML = "&larr; Return to Saved Orders Page";
+    editOrderLink.setAttribute("onclick", "showPage(savedOrders)");
+    invoiceBtn.classList.add("d-none");
   }
+
+  // Read customer info and inject onto HTML page
+  let invoiceDetails = document.getElementById("invoiceDetails");
+  let invoiceCustomer = `For <b>${orderValues[0][0]}</b>`;
+  if (orderValues[2] == true) {
+    invoiceCustomer += ` at address <b>${orderValues[0][1]}</b> with phone number <b>${orderValues[0][2]}</b>`;
+  }
+  invoiceDetails.innerHTML = invoiceCustomer;
 
   // Read order array and show as HTML table
   for (let i = 0; i < COFFEE.length; i++) {
-    for (let p = 0; p < order[p].length; p++) {
-      let amount = order[i][p];
+    for (let p = 0; p < orderValues[1][p].length; p++) {
+      let amount = orderValues[1][i][p];
       if (amount > 0) {
         if (p == 2) {
           size = "Large";
@@ -378,7 +404,8 @@ function readOrder(order, canEdit) {
       }
     }
   }
-  if (isDelivery == true) {
+  orderShipping = "";
+  if (orderValues[2] == true) {
     orderShipping = `
       <tr>
       <th scope="row" class="fw-bold">Delivery</th>
@@ -398,6 +425,44 @@ function readOrder(order, canEdit) {
       </td>
     </tr>`;
   invoiceBody.innerHTML = invoiceRows + orderShipping + orderTotal;
+  showPage(orderInvoice);
+}
+
+let saveBtn = document.getElementById("saveOrder");
+saveBtn.addEventListener("click", function (e) {
+  e.preventDefault();
+  let date = new Date().toLocaleString();
+  localStorage.setItem(
+    `${date} Customer Order: ${customerInfo[0]}`,
+    JSON.stringify(savedOrder)
+  );
+  alert("green", "Order is saved");
+  showPage(mainMenu);
+});
+
+function showLocalStorage() {
+  let mainKeys = Object.keys(localStorage);
+  let orders = "";
+  mainKeys.forEach(function (key) {
+    orders += `
+        <a
+          href="javascript:void(0);"
+          onclick="openSavedOrder('${key}')"
+        >
+          <div class="card">
+            <div class="card-body">
+              ${key}
+            </div>
+          </div>
+        </a>`;
+  });
+  let ordersList = document.getElementById("ordersList");
+  ordersList.innerHTML = orders;
+}
+
+function openSavedOrder(key) {
+  item = JSON.parse(localStorage.getItem(key));
+  readOrder(item);
 }
 
 function isEmpty(userInput) {
@@ -413,10 +478,11 @@ function showPage(page) {
   let mainMenu = document.getElementById("mainMenu");
   let orderMenu = document.getElementById("orderMenu");
   let orderInvoice = document.getElementById("orderInvoice");
-  resetOutput();
+  let savedOrders = document.getElementById("savedOrders");
   mainMenu.classList.add("d-none");
   orderMenu.classList.add("d-none");
   orderInvoice.classList.add("d-none");
+  savedOrders.classList.add("d-none");
   page.classList.remove("d-none");
 }
 

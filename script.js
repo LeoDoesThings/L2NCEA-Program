@@ -38,9 +38,9 @@ var currency = new Intl.NumberFormat("en-US", {
 let orderForm = document.getElementById("orderForm");
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
-  resetOutput();
   let run;
   let customerInputs = document.querySelectorAll(`input[id^="customer"]`);
+  customerInfo = [];
   customerInputs.forEach(function (input) {
     input = input.value;
     if (isEmpty(input)) {
@@ -102,10 +102,6 @@ function newOrder() {
   let orderBody = document.getElementById("orderBody");
   let pricesElement = document.getElementById("prices");
   let bulkCoffeeSelect = document.getElementById("bulkCoffeeSelect");
-  // Reset variables
-  isDelivery = false;
-  orderRows = "";
-  bulkCoffeeSelect.innerHTML = "";
   // Inject information onto page
   pricesElement.innerHTML = `
     Regular - ${currency.format(costRegular)}<br>
@@ -139,6 +135,15 @@ function newOrder() {
   for (let i = 0; i < maxCapacity; i++) {
     updateCoffee(i);
   }
+  // Reset variables
+  isDelivery = false;
+  orderRows = "";
+  bulkCoffeeSelect.innerHTML = "";
+  let customerInputs = document.querySelectorAll(`input[id^="customer"]`);
+  customerInputs.forEach((input) => (input.value = ""));
+  let transport = document.getElementById("transportDropdown");
+  transport.value = "pickUp";
+  updateTransport(transport);
   // Inject HTML and show the page
   bulkCoffeeSelect.innerHTML = coffeeOptions;
   showPage(orderMenu);
@@ -217,7 +222,7 @@ function updateCost(index) {
     else cost = costRegular;
   }
   // Inject new cost into the element
-  costElement.innerHTML = `${currency.format(cost)}`;
+  costElement.innerHTML = currency.format(cost);
   updateTotal();
 }
 
@@ -288,8 +293,8 @@ function bulkAdd() {
     alert("red", "No capacity remaining. No items added.");
     return;
   }
-  let amount = document.getElementById("bulkAddAmount").value;
   // Do not run if an amount was not specified
+  let amount = document.getElementById("bulkAddAmount").value;
   if (amount == "") {
     alert("red", "No amount entered. Added 0 items.");
     return;
@@ -322,10 +327,12 @@ function bulkAdd() {
     formCoffeesEmpty[i].value = coffeeSelect;
     formSizesEmpty[i].value = size;
     formSizesEmpty[i].disabled = false;
-    updateCost(i);
+    // Get index of empty row and update the cost value
+    updateCost(formSizesEmpty[i].id.replace(/[^0-9]/g, ""));
   }
   // Clear bulk amount input field
   document.getElementById("bulkAddAmount").value = "";
+  // Capitalise the first letter of string. e.g. 'regular' to 'Regular'
   let sizeCapitalised = size.charAt(0).toUpperCase() + size.slice(1);
   // Inform user of successful action with details
   alert("green", `Added ${amount}x ${sizeCapitalised} ${COFFEE[coffeeSelect]}`);
@@ -347,21 +354,26 @@ function readOrder(savedOrder, canEdit) {
   let invoiceBody = document.getElementById("invoiceBody");
   let title = document.getElementById("invoiceTitle");
   // Reset variables
+  let cost = 0;
   let costTotal = 0;
   let size;
   invoiceRows = "";
 
-  // Get order from object in format: [customerInfo, order, isDelivery]
+  // Get order from object in multidimensional array: [customerInfo, order, isDelivery]
   orderValues = Object.values(savedOrder);
 
-  // Show order title
+  // Set order title depending on delivery method
   if (orderValues[2] == true) title.innerHTML = "Delivery Order";
   else title.innerHTML = "Pick-up Order";
 
   // Change function of back button if the order can not be edited
-  if (!canEdit) {
-    let editOrderLink = document.getElementById("editOrder");
-    let invoiceBtn = document.getElementById("invoiceButtons");
+  let editOrderLink = document.getElementById("editOrder");
+  let invoiceBtn = document.getElementById("invoiceButtons");
+  if (canEdit) {
+    editOrderLink.innerHTML = "&larr; Return to Order Page (edit order)";
+    editOrderLink.setAttribute("onclick", "showPage(orderMenu)");
+    invoiceBtn.classList.remove("d-none");
+  } else {
     editOrderLink.innerHTML = "&larr; Return to Saved Orders Page";
     editOrderLink.setAttribute("onclick", "showPage(savedOrders)");
     invoiceBtn.classList.add("d-none");
@@ -484,10 +496,6 @@ function showPage(page) {
   orderInvoice.classList.add("d-none");
   savedOrders.classList.add("d-none");
   page.classList.remove("d-none");
-}
-
-function resetOutput() {
-  output.innerHTML = "";
 }
 
 function alert(colour, message) {

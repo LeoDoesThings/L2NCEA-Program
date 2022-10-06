@@ -1,3 +1,4 @@
+// Array of available coffee types
 const COFFEE = [
   "Cappuccino",
   "Flat White",
@@ -12,15 +13,19 @@ const COFFEE = [
   "Short Black",
   "Piccolo Latte",
 ];
+// Maximum order capacity
 const maxCapacity = 10;
+// Size costs
 const costRegular = 5.5;
 const costMedium = costRegular + 1;
 const costLarge = costRegular + 2;
+// Delivery fee
 const costShipping = 5;
+// Order information variables
 let costTotal = 0;
 let isDelivery = false;
 let remainingCapacity = maxCapacity;
-
+// Program required global variables
 let customerInfo = [];
 let savedOrder = {};
 let order = [];
@@ -35,12 +40,14 @@ var currency = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
+// Run when user clicks submit on order form
 let orderForm = document.getElementById("orderForm");
 orderForm.addEventListener("submit", function (e) {
   e.preventDefault();
   let run;
   let customerInputs = document.querySelectorAll(`input[id^="customer"]`);
   customerInfo = [];
+  // Add all customer info to array, stop running if not entered.
   customerInputs.forEach(function (input) {
     input = input.value;
     if (isEmpty(input)) {
@@ -59,15 +66,9 @@ orderForm.addEventListener("submit", function (e) {
     return;
   }
 
-  // Reset order array
-  order = [];
-  for (let i = 0; i < COFFEE.length; i++) {
-    order.push([0, 0, 0]);
-  }
-
+  // Save all user selected coffees to array
   let coffeeTypes = document.querySelectorAll(`select[id^="coffeeDropdown"]`);
   let coffeeSizes = document.querySelectorAll(`select[id^="sizeDropdown"]`);
-
   for (let i = 0; i < coffeeTypes.length; i++) {
     let cType = coffeeTypes[i].value;
     let cSize = coffeeSizes[i].value;
@@ -85,10 +86,11 @@ orderForm.addEventListener("submit", function (e) {
   }
 
   orderSum = order.flat().reduce((a, b) => a + b, 0);
-
+  // If order is empty, require user to input at least one item.
   if (orderSum == 0) {
     alert("red", "Please add at least 1 coffee to the order");
   } else {
+    // If order is not empty, save order to object and show it to user.
     savedOrder = {
       customer: customerInfo,
       order: order,
@@ -98,6 +100,7 @@ orderForm.addEventListener("submit", function (e) {
   }
 });
 
+// Load order form with inputs and cost information
 function newOrder() {
   let orderBody = document.getElementById("orderBody");
   let pricesElement = document.getElementById("prices");
@@ -144,13 +147,18 @@ function newOrder() {
   let transport = document.getElementById("transportDropdown");
   transport.value = "pickUp";
   updateTransport(transport);
+  // Reset order array
+  order = [];
+  for (let i = 0; i < COFFEE.length; i++) {
+    order.push([0, 0, 0]);
+  }
   // Inject HTML and show the page
   bulkCoffeeSelect.innerHTML = coffeeOptions;
   showPage(orderMenu);
 }
 
 function createCoffeeRow(index) {
-  // Create a row of inputs with IDs depending on index number
+  // Create an HTML row of inputs with IDs depending on index number
   orderRows += `
     <tr id="coffeeRow${index}">
       <th scope="row" class="fw-normal">${index + 1}.</th>
@@ -184,11 +192,13 @@ function createCoffeeRow(index) {
     </tr>`;
 }
 
+// Create coffee option for HTML <select> dropdown depending on name and index in COFFEE array
 function createCoffeeOption(name, index) {
   coffeeOptions += `<option value="${index}">${name}
                     </option>`;
 }
 
+// Runs when the user selects a coffee from <select> dropdown
 function updateCoffee(index) {
   let coffeeElement = document.getElementById(`coffeeDropdown${index}`);
   let sizeElement = document.getElementById(`sizeDropdown${index}`);
@@ -201,9 +211,11 @@ function updateCoffee(index) {
     sizeElement.classList.remove("bg-danger");
     sizeElement.disabled = true;
   }
+  // Update the cost number in corresponding row
   updateCost(index);
 }
 
+// Show the cost of user selected coffee size
 function updateCost(index) {
   let coffeeElement = document.getElementById(`coffeeDropdown${index}`);
   let sizeElement = document.getElementById(`sizeDropdown${index}`);
@@ -226,24 +238,30 @@ function updateCost(index) {
   updateTotal();
 }
 
+// Calculate total cost and show on page
 function updateTotal() {
   let costTotalElement = document.getElementById("costTotal");
   let costElements = document.querySelectorAll(`td[id^="cost-"]`);
   costTotal = 0;
+  // Convert all individual costs to JS numbers and add to total
   costElements.forEach(
     (element) =>
       (costTotal += Number(element.textContent.replace(/[^0-9\.]+/g, "")))
   );
+  // If the order is delivery then add delivery fee to total
   if (isDelivery == true) costTotal += costShipping;
+  // Inject total onto page
   costTotalElement.innerHTML = currency.format(costTotal);
 }
 
+// Add/remove delivery information depending on user selection for transport method
 function updateTransport(transportSelect) {
   let deliveryElement = document.getElementById("deliveryInfo");
   let deliveryRow = document.getElementById("rowDelivery");
   if (transportSelect.value == "delivery") {
-    // If order is delivery then show inputs for delivery information
+    // Save state of delivery
     isDelivery = true;
+    // If order is delivery then add inputs for delivery information
     deliveryElement.innerHTML = `
       <div class="input-group mb-2">
         <span class="input-group-text" for="customerAddress"
@@ -259,12 +277,13 @@ function updateTransport(transportSelect) {
       </div>`;
     deliveryRow.classList.remove("d-none");
   } else {
-    // If order is not delivery then do not show inputs for delivery information
+    // Save state of delivery
     isDelivery = false;
+    // If order is not delivery then remove inputs for delivery information
     deliveryElement.innerHTML = "";
     deliveryRow.classList.add("d-none");
   }
-  // Add or remove the delivery fee depending on the value of `isDelivery`
+  // Add/remove delivery fee depending on the value of `isDelivery`
   updateTotal();
 }
 
@@ -275,18 +294,32 @@ function updateBulkName(bulkSelect) {
   bulkCoffeeName.innerHTML = COFFEE[bulkSelect.value];
 }
 
+// Check the user input is a valid integer within capacity
 function verifyAmount(input) {
-  if (input.value < 1) {
-    // If user inputs an amount smaller than 1 then reset amount to 1
+  // Failsafe if the user is somehow able to enter text
+  inputNum = Number(input.value);
+  // Require the user to enter a number
+  if (isNaN(inputNum)) {
+    input.value = "";
+    alert("red", "Please enter a number");
+  }
+  // Convert number to integer
+  if (!Number.isInteger(inputNum)) {
+    input.value = parseInt(inputNum);
+  }
+  // If user inputs an amount smaller than 1 then reset amount to 1
+  if (inputNum < 1) {
     input.value = 1;
     alert("red", "You must add at least 1 item");
-  } else if (input.value > remainingCapacity) {
-    // If user inputs an amount larger than remaining capacity then reset amount to remaining capacity
+  }
+  // If user inputs an amount larger than remaining capacity then reset amount to remaining capacity
+  if (inputNum > remainingCapacity) {
     input.value = remainingCapacity;
     alert("red", `The remaining capacity is ${remainingCapacity} items`);
   }
 }
 
+// Add the user selected amount of coffee type and size to order form
 function bulkAdd() {
   // Do not run if there is no capacity remaining
   if (remainingCapacity <= 0) {
@@ -338,6 +371,7 @@ function bulkAdd() {
   alert("green", `Added ${amount}x ${sizeCapitalised} ${COFFEE[coffeeSelect]}`);
 }
 
+// Calculate remaining capacity
 function calculateCapacity() {
   let coffeeSizes = document.querySelectorAll("select[id^='sizeDropdown']");
   // Reset remaining capacity and for every coffee selected, remove 1 from remaining capacity
@@ -349,6 +383,7 @@ function calculateCapacity() {
   });
 }
 
+// Read order object/arrays and show on page
 function readOrder(savedOrder, canEdit) {
   // Get HTML elements
   let invoiceBody = document.getElementById("invoiceBody");
@@ -387,11 +422,15 @@ function readOrder(savedOrder, canEdit) {
   }
   invoiceDetails.innerHTML = invoiceCustomer;
 
-  // Read order array and show as HTML table
+  // Run for every coffee type
   for (let i = 0; i < COFFEE.length; i++) {
+    // Run for every coffee size
     for (let p = 0; p < orderValues[1][p].length; p++) {
+      // Get amount
       let amount = orderValues[1][i][p];
+      // Do not run if there is no amount
       if (amount > 0) {
+        // Get corresponding cost for size
         if (p == 2) {
           size = "Large";
           cost = costLarge;
@@ -402,8 +441,10 @@ function readOrder(savedOrder, canEdit) {
           size = "Regular";
           cost = costRegular;
         }
+        // Calculate costs
         cost = cost * amount;
         costTotal += cost;
+        // Add information to HTML table row
         invoiceRows += `
           <tr>
             <td>${COFFEE[i]}</td>
@@ -417,6 +458,7 @@ function readOrder(savedOrder, canEdit) {
     }
   }
   orderShipping = "";
+  // If order is to be delivered then add fee to total cost and show fee in HTML table
   if (orderValues[2] == true) {
     orderShipping = `
       <tr>
@@ -428,6 +470,7 @@ function readOrder(savedOrder, canEdit) {
       </tr>`;
     costTotal += costShipping;
   }
+  // Show total cost in HTML table
   orderTotal = `
     <tr>
       <th scope="row" class="fw-bold">Total</th>
@@ -436,49 +479,63 @@ function readOrder(savedOrder, canEdit) {
         ${currency.format(costTotal)}
       </td>
     </tr>`;
+  // Inject HTML table into page and show the page
   invoiceBody.innerHTML = invoiceRows + orderShipping + orderTotal;
   showPage(orderInvoice);
 }
 
+// If user clicks 'Save' btn then add order object to localStorage
 let saveBtn = document.getElementById("saveOrder");
 saveBtn.addEventListener("click", function (e) {
   e.preventDefault();
+  // Save object to localStorage with key including date and customer name
   let date = new Date().toLocaleString();
   localStorage.setItem(
     `${date} Customer Order: ${customerInfo[0]}`,
     JSON.stringify(savedOrder)
   );
+  // Alert user and return to main menu
   alert("green", "Order is saved");
   showPage(mainMenu);
 });
 
+// Find all keys in localStorage and show as buttons on page
 function showLocalStorage() {
+  // Save localStorage keys in an array
   let mainKeys = Object.keys(localStorage);
   let orders = "";
-  mainKeys.forEach(function (key) {
-    orders += `
-        <a
-          href="javascript:void(0);"
-          onclick="openSavedOrder('${key}')"
-        >
-          <div class="card">
-            <div class="card-body">
-              ${key}
+  // Inform the user if there are no saved orders
+  if (mainKeys === undefined || mainKeys.length == 0) {
+    orders = "No saved orders";
+  } else {
+    // Create a button for every localStorage key
+    mainKeys.forEach(function (key) {
+      orders += `
+          <a
+            href="javascript:void(0);"
+            onclick="openSavedOrder('${key}')"
+          >
+            <div class="card">
+              <div class="card-body">
+                ${key}
+              </div>
             </div>
-          </div>
-        </a>`;
-  });
+          </a>`;
+    });
+  }
+  // Inject information into page
   let ordersList = document.getElementById("ordersList");
   ordersList.innerHTML = orders;
 }
 
+// Show the order corresponding to localStorage key
 function openSavedOrder(key) {
   item = JSON.parse(localStorage.getItem(key));
-  readOrder(item);
+  readOrder(item, false);
 }
 
+// Check for empty string and return boolean
 function isEmpty(userInput) {
-  // Check if input is empty
   if (userInput == "") {
     return true;
   } else {
@@ -486,25 +543,31 @@ function isEmpty(userInput) {
   }
 }
 
+// Hide all pages and show the needed page
 function showPage(page) {
   let mainMenu = document.getElementById("mainMenu");
   let orderMenu = document.getElementById("orderMenu");
   let orderInvoice = document.getElementById("orderInvoice");
   let savedOrders = document.getElementById("savedOrders");
+  // Hide all pages
   mainMenu.classList.add("d-none");
   orderMenu.classList.add("d-none");
   orderInvoice.classList.add("d-none");
   savedOrders.classList.add("d-none");
+  // Show the needed page
   page.classList.remove("d-none");
 }
 
+// Toast message box for program output
 function alert(colour, message) {
+  // Set box colour
   let bg;
   if (colour == "red") {
     bg = "text-bg-danger";
   } else if (colour == "green") {
     bg = "text-bg-success";
   }
+  // Set box message
   output.innerHTML = `
     <div id="liveToast" class="toast align-items-center border-0 ${bg}" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
@@ -514,6 +577,7 @@ function alert(colour, message) {
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>`;
+  // Show toast box
   const toast = new bootstrap.Toast(document.getElementById("liveToast"));
   toast.show();
 }

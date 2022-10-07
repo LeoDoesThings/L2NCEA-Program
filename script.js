@@ -25,7 +25,7 @@ const costShipping = 5;
 let costTotal = 0;
 let isDelivery = false;
 let remainingCapacity = maxCapacity;
-// Program required global variables
+// Create required global variables
 let customerInfo = [];
 let savedOrder = {};
 let order = [];
@@ -64,6 +64,12 @@ orderForm.addEventListener("submit", function (e) {
   // Stop running if variable is false
   if (run == false) {
     return;
+  }
+
+  // Reset order array
+  order = [];
+  for (let i = 0; i < COFFEE.length; i++) {
+    order.push([0, 0, 0]);
   }
 
   // Save all user selected coffees to array
@@ -147,11 +153,7 @@ function newOrder() {
   let transport = document.getElementById("transportDropdown");
   transport.value = "pickUp";
   updateTransport(transport);
-  // Reset order array
-  order = [];
-  for (let i = 0; i < COFFEE.length; i++) {
-    order.push([0, 0, 0]);
-  }
+  document.getElementById("bulkAddSize").value = "regular";
   // Inject HTML and show the page
   bulkCoffeeSelect.innerHTML = coffeeOptions;
   showPage(orderMenu);
@@ -302,9 +304,8 @@ function verifyAmount(input) {
   if (isNaN(inputNum)) {
     input.value = "";
     alert("red", "Please enter a number");
-  }
-  // Convert number to integer
-  if (!Number.isInteger(inputNum)) {
+  } else if (!Number.isInteger(inputNum)) {
+    // Convert number to integer if not integer already
     input.value = parseInt(inputNum);
   }
   // If user inputs an amount smaller than 1 then reset amount to 1
@@ -528,7 +529,7 @@ function showLocalStorage() {
   ordersList.innerHTML = orders;
 }
 
-// Show the order corresponding to localStorage key
+// Parse the JSON localStorage key and show the corresponding order data
 function openSavedOrder(key) {
   item = JSON.parse(localStorage.getItem(key));
   readOrder(item, false);
@@ -543,7 +544,7 @@ function isEmpty(userInput) {
   }
 }
 
-// Hide all pages and show the needed page
+// Hide all pages and then show the wanted page
 function showPage(page) {
   let mainMenu = document.getElementById("mainMenu");
   let orderMenu = document.getElementById("orderMenu");
